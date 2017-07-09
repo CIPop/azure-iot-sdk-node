@@ -41,12 +41,16 @@ device_provision(hubConnectionString, function (err, provisionedDevices) {
     console.log('Unable to create the devices needed.');
   } else {
     provisionedDevices.forEach(function(deviceToTest) {
-      acknowledgementProtocols.forEach(function (protocolToTest) {
-        device_acknowledge_tests(hubConnectionString, protocolToTest, deviceToTest);
+      if (deviceToTest.authenticationDescription !== 'shared private key') {
+        acknowledgementProtocols.forEach(function (protocolToTest) {
+          device_acknowledge_tests(hubConnectionString, protocolToTest, deviceToTest);
         });
-      generalProtocols.forEach(function(protocolToTest) {
-        device_service_tests(hubConnectionString, protocolToTest, deviceToTest);
-      });
+      }
+      if (deviceToTest.authenticationDescription !== 'CA signed certificate') {
+        generalProtocols.forEach(function(protocolToTest) {
+          device_service_tests(hubConnectionString, protocolToTest, deviceToTest);
+        });
+      }
     });
 
     // In the interest of saving time, we only will perform the connection
@@ -71,7 +75,7 @@ device_provision(hubConnectionString, function (err, provisionedDevices) {
   authentication_tests(hubConnectionString);
 
   device_teardown(hubConnectionString, provisionedDevices);
-  if (!provisionedDevices || provisionedDevices.length !== 3) {
+  if (!provisionedDevices || provisionedDevices.length !== 4) {
     describe('device creation did not', function() {
       it('completely work', function(done) {
           done(new Error(''));
